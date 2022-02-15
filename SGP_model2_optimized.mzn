@@ -42,5 +42,5 @@ constraint forall(semaine in 2..nb_semaines) (2 in planning[semaine,2]);
 %);
 solve satisfy;
 
-output [ if grp=1 then "\n semaine \(s) |\t" else " \t" endif
+output [ if grp=1 then "\n semaine \(s) |\t" else "\t" endif
         ++ show(planning[s,grp])|s in semaines, grp in groupes];
