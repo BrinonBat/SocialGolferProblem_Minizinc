@@ -26,14 +26,15 @@ constraint forall(s1,s2 in semaines, g1,g2 in groupes where {s1,g1}!={s2,g2})(
 constraint assert(taille_groupes <= nb_groupes,"invalide car la taille du groupe est supérieure au nombre de groupe");
 
 %brisage de symmetrie
+%contrainte sur la première ligne
 constraint forall(groupe in groupes)(
   planning[1,groupe]=((groupe-1)*taille_groupes+1)..(groupe*taille_groupes)
 );
 
-%temp, à remplacer par la contrainte du pourquoi quand la raison du ralentissement quand on dépasse 2 semaines est identifié
+%temporaire, à remplacer par la contrainte du pourquoi quand la raison du ralentissement quand on dépasse 2 semaines est identifié
 constraint forall(semaine in semaines)( 1 in planning[semaine,1]);
 constraint forall(semaine in 2..nb_semaines) (2 in planning[semaine,2]);
-%constraint forall(semaine in semaines) ( semaine+1 in planning[semaine,1]); rends certaines configurations insatisfiables ( 5 groupes de taille 5 sur 6 semaines )
+%constraint forall(semaine in semaines) ( semaine+1 in planning[semaine,1]); incompatible avec la contrainte sur la 1ere ligne, tester la rapidité des deux et garder la meilleure
 
 % CONTRAINTE DU POURQUOI 
 %constraint forall(groupe_number in 1..(nb_groupes - 1))(
