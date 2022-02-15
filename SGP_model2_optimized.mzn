@@ -30,8 +30,14 @@ constraint forall(groupe in groupes)(
   planning[1,groupe]=((groupe-1)*taille_groupes+1)..(groupe*taille_groupes)
 );
 
-constraint forall(semaine in semaines)( 1 in planning[semaine,1]);
-constraint forall(semaine in 2..nb_semaines) (2 in planning[semaine,2]);
+%temp, à remplacer par la contrainte du pourquoi quand retirage de solution est identifié, notamment pour groupes de taille 2
+%constraint forall(semaine in semaines)( 1 in planning[semaine,1]);
+%constraint forall(semaine in 2..nb_semaines) (2 in planning[semaine,2]);
+
+% CONTRAINTE DU POURQUOI 
+constraint forall(groupe_number in 1..nb_groupes-1)(
+  forall(semaine in groupe_number..nb_semaines) ( groupe_number in planning[semaine,groupe_number])
+);
 solve satisfy;
 
 output [ if grp=1 then "\n semaine \(s) |\t" else " \t" endif
