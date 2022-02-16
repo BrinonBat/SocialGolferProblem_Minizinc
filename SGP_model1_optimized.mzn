@@ -46,8 +46,9 @@ solve satisfy;
 output [
         if i=1 then 
           if grp=1 then 
-            if s=1 then " \n rencontres est \(rencontres) \n le planning est \n semaine \(s) |\t" else "\n semaine \(s) |\t" endif
-          else " \t" endif
+%             if s=1 then " \n rencontres est \(rencontres) \n le planning est \n semaine \(s) |\t" else "\n semaine \(s) |\t" endif
+            if s=1 then "\nLe planning est :\n\nSemaine \(s) |    " else "\nSemaine \(s) |    " endif
+          else "    " endif
         else " " endif ++
         show(planning[s,grp,i])
         |s in semaines, grp in groupes, i in 1..taille_groupe];
