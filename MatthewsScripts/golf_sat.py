@@ -24,6 +24,8 @@ def combolist(size,triangle=True, diagonal=False):
 		return [(i,j) for i,j in list(itertools.product(np.arange(size),np.arange(size))) if i!=j]
 	return [(i,j) for i,j in list(itertools.product(np.arange(size),np.arange(size)))]
 
+
+
 # A player plays at least once a week
 for player in range(P):
 	for week in range(W):
@@ -32,6 +34,7 @@ for player in range(P):
 			for group in range(G):
 				OR += [int(B4[week,group,player,pos])]
 		g.add_clause(OR)
+		
 
 # A player is once in a group
 for player in range(P):
@@ -39,6 +42,7 @@ for player in range(P):
 		for group in range(G):
 			for pos1, pos2 in combolist(GS):
 				g.add_clause([int(-B4[week,group,player,pos1]),int(-B4[week,group,player,pos2])])
+				
 
 # A player plays once a week
 for player in range(P):
@@ -48,6 +52,7 @@ for player in range(P):
 			for pos1 in range(GS):
 				for pos2 in range(GS):
 					g.add_clause([int(-B4[week,group1,player,pos1]),int(-B4[week,group2,player,pos2])])
+					
 
 
 # Groups have a player in each position
@@ -57,6 +62,7 @@ for week in range(W):
 			OR = []
 			for player in range(P):
 				OR += [int(B4[week,group,player,pos])]
+			g.add_clause(OR)
 
 
 # One player per position
