@@ -121,8 +121,7 @@ for week,group in [(i,j) for i,j in list(itertools.product(np.arange(W),np.arang
 
 
 
-
-
+print("{} variables".format(M_-1))
 print(g.solve())
 
 out = np.array(g.get_model()[_B3-1:B3_-1]).reshape(W,G,P)
