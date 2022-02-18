@@ -20,7 +20,7 @@
             <elemof name="semaine"> semaines </elemof>
             <equals>
                 <!-- TODO array_union([planning[semaine,groupe]| groupe in groupes]  TODO -->
-                <elem name="golfeurs">
+                <elem name="golfeurs" />
             </equals>
         </forall>
 

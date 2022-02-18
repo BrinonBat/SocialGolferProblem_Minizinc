@@ -4,6 +4,7 @@ import pyautogui
 import time
 import asyncio
 import threading
+import xml.etree.ElementTree as ET
 
 from datetime import timedelta
 
@@ -225,10 +226,44 @@ class MainScreen(Screen):
 
         return screen
 
+class Model():
+    def __init__(self):
+        print('init model')
+
 class MainApp(App):
     def build(self):
+        model = self.importXML('SGP_model2.xml')
         root = WindowManager(transition=NoTransition())
         root.build()
         return root
+
+    def importXML(self, file):
+        tree = ET.parse(file)
+        root = tree.getroot()
+
+        model = Model()
+
+        setattr(model, 'resolution', root.get('resolution'))
+
+        variables = root.find('variables')
+        constraints = root.find('constraints')
+
+        for variable in variables:
+            tag = variable.tag
+            if(tag == 'int'):
+                setattr(model, variable.get("id"), None)
+            elif(tag == 'set'):
+                setattr(model, variable.get("id"), {})
+            else:
+                setattr(model, variable.get("id"), [])
+
+        liste_constraints = []
+        for constraint in constraints:
+            txt = ET.tostring(constraint, encoding='unicode')
+            liste_constraints.append("".join(txt.split()))
+
+        setattr(model, 'constraints', liste_constraints)
+
+        return model
 
 MainApp().run()
