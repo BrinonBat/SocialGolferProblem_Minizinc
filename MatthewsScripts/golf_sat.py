@@ -134,6 +134,20 @@ for week,group in [(i,j) for i,j in list(itertools.product(np.arange(W),np.arang
 
 
 
+# Symmetry Breaking on B3
+# First Week
+for player in range(P):
+	i = player // GS
+	g.add_clause([int(B3[0,i,player])])
+	clausecount+=1
+
+# Split first Group of first Week
+for player in range(GS):
+	for week in range(1,W):
+		g.add_clause([int(B3[week,player,player])])
+		clausecount+=1
+
+
 print("{} variables, {} clauses".format(M_-1, clausecount))
 if g.solve():
 
