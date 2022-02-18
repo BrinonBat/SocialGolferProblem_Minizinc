@@ -29,15 +29,28 @@ constraint forall(s1,s2 in semaines, g1,g2 in groupes where [s1,g1]!=[s2,g2])(
 %A1
 constraint assert(taille_groupes <= nb_groupes,"invalide car la taille du groupe est supérieure au nombre de groupe");
 
+%surcontraintes
+%Un joueur ne joue qu'une seule fois par semaine
+%C4
+constraint forall(semaine in semaines, g1,g2 in groupes where g1!=g2)(
+  card(planning[semaine,g1] intersect planning[semaine,g2])=0
+);
+
+%C5
+constraint forall(semaine in semaines, g1,g2 in groupes where g1!=g2)(
+  planning[semaine,g1] intersect planning[semaine,g2] = {}
+);
+
+
 %brisage de symmetrie
 %contrainte sur la première ligne
-%C4
+%C6
 constraint forall(groupe in groupes)(
   planning[1,groupe]=((groupe-1)*taille_groupes+1)..(groupe*taille_groupes)
 );
 
 %contrainte sur la répartition d'une semaine de la première semaine parmi les semaines suivantes
-%C5
+%C7
 constraint forall( golfeur in 1..taille_groupes)(
  forall(semaine in 2..nb_semaines)(
     golfeur in planning[semaine,golfeur]
