@@ -1,0 +1,63 @@
+<model resolution="satisfy">
+    <variables>
+        <!-- entiers -->
+        <int id="taille_groupe" saisie="False" /> <!--  saisie indique si  la valeur est déjà dans le modèle "True" ou si l'utilisateur doit la saisir lui-même "False" -->
+        <int id="nb_groupes" saisie="False" />
+        <int id="nb_semaines" saisie="False" />
+        <int id="nb_golfeurs" saisie="True"> taille_groupe*nb_groupes </int>
+
+        <!-- sets d'entiers -->
+        <set id="golfeurs" > 1..nb_golfeurs</set>
+        <set id="semaines" > 1..nb_semaines</set>
+        <set id="groupes" > 1..nb_groupes</set>
+
+        <array id="planning" size="[nb_semaines][nb_groupes]" />
+    </variables>
+
+    <constraints>
+        <!-- tous les joueurs jouent chaque semaine -->
+        <forall>
+            <elemof name="semaine"> semaines </elemof>
+            <equals>
+                <!-- TODO array_union([planning[semaine,groupe]| groupe in groupes]  TODO -->
+                <elem name="golfeurs">
+            </equals>
+        </forall>
+
+        <!--les groupes sont de taille nb_golfeurs/nb_groupes-->
+        <forall>
+            <elemof name="semaine"> semaines </elemof>
+            <elemof name="groupe"> groupes </elemof>
+            <equals>
+                <card>
+                    <elem> planning[semaine,groupe] </elem>
+                </card>
+                <elem> taille_groupe </elem>
+            </equals>
+        </forall>
+
+        <!-- chaque golfeur ne joue qu'une seule fois avec chaque autre-->
+        <forall>
+            <elemof name="s1"> semaines </elemof>
+            <elemof name="s2"> semaines </elemof>
+            <elemof name="g1"> groupes </elemof>
+            <elemof name="g2"> groupes </elemof>
+            <where>
+                <notEquals>
+                    <elem> s1 g1 </elem>
+                    <elem> s2 g2 </elem>
+                </notEquals>
+            </where>
+            <lesserThan>
+                <card>
+                    <intersect>
+                        <elem> planning[s1,g1] </elem>
+                        <elem> planning[s2,g2] </elem>
+                    </intersect>
+                </card>
+                <elem> 2 </elem>
+            </lesserThan>
+        </forall>
+        
+    </constraints>
+</model>
