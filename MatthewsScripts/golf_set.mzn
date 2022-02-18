@@ -25,7 +25,7 @@ constraint forall(w1,w2 in W, g1,g2 in G where [w1,g1]!=[w2,g2])(
 
 
 % Extra Constraints
-  %A player doesn't player in two groups / Twice, the same week (E1) % This constraint is achived by (1+2)
+  %A player doesn't play in two groups / Twice, the same week (E1) % This constraint is achived by (1+2)
   %by restricting the card of the intersect (E1a)
 constraint forall(w in W, g1,g2 in G where g1!=g2)(
   card(WG[w,g1] intersect WG[w,g2])=0

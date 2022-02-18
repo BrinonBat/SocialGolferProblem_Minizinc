@@ -4,7 +4,7 @@ from pysat.solvers import Glucose3
 g = Glucose3()
 
 # Problem Dimentions and Ranges
-W=4 	# num of weeks
+W=5 	# num of weeks
 G=5 	# num of groups
 GS=3 	# group size
 P=15 	# num of players # P=GGS
@@ -24,7 +24,7 @@ def combolist(size,triangle=True, diagonal=False):
 		return [(i,j) for i,j in list(itertools.product(np.arange(size),np.arange(size))) if i!=j]
 	return [(i,j) for i,j in list(itertools.product(np.arange(size),np.arange(size)))]
 
-
+clausecount = 0
 
 # A player plays at least once a week
 for player in range(P):
@@ -34,6 +34,7 @@ for player in range(P):
 			for group in range(G):
 				OR += [int(B4[week,group,player,pos])]
 		g.add_clause(OR)
+		clausecount+=1
 		
 
 # A player is once in a group
@@ -42,6 +43,7 @@ for player in range(P):
 		for group in range(G):
 			for pos1, pos2 in combolist(GS):
 				g.add_clause([int(-B4[week,group,player,pos1]),int(-B4[week,group,player,pos2])])
+				clausecount+=1
 				
 
 # A player plays once a week
@@ -52,6 +54,7 @@ for player in range(P):
 			for pos1 in range(GS):
 				for pos2 in range(GS):
 					g.add_clause([int(-B4[week,group1,player,pos1]),int(-B4[week,group2,player,pos2])])
+					clausecount+=1
 					
 
 
@@ -63,6 +66,7 @@ for week in range(W):
 			for player in range(P):
 				OR += [int(B4[week,group,player,pos])]
 			g.add_clause(OR)
+			clausecount+=1
 
 
 # One player per position
@@ -71,6 +75,7 @@ for week in range(W):
 		for pos in range(GS):
 			for player1, player2 in combolist(P):
 				g.add_clause([int(-B4[week,group,player1,pos]),int(-B4[week,group,player2,pos])])
+				clausecount+=1
 
 
 # B4wgpp <-> B3wgp
@@ -82,9 +87,11 @@ for week in range(W):
 		for player in range(P):
 			OR = [-int(B3[week,group,player])]
 			for pos in range(GS):
+				clausecount+=1
 				g.add_clause([-int(B4[week,group,player,pos]),int(B3[week,group,player])])
 				OR += [int(B4[week,group,player,pos])]
 			g.add_clause(OR)
+			clausecount+=1
 
 
 
@@ -103,6 +110,7 @@ M = np.array([b for b in range(_M,M_)],dtype=int).reshape((couplesinP,possibleMe
 for couple in range(couplesinP):
 	for pm1, pm2 in combolist(possibleMeets):
 		g.add_clause([-int(M[couple,pm1]),-int(M[couple,pm2])])
+		clausecount+=1
 
 # B3wgp1 and B3wgp2 <-> M(p1*p2)(w*g)
 # B3wgp1 and B3wgp2 -> M(p1*p2)(w*g) = -B3wgp1 -B3wgp2 M(p1*p2)(w*g)
@@ -117,7 +125,7 @@ for week,group in [(i,j) for i,j in list(itertools.product(np.arange(W),np.arang
 		
 		g.add_clause([int(B3[week,group,player1]),-int(M[couple,wg])])
 		g.add_clause([int(B3[week,group,player2]),-int(M[couple,wg])])
-
+		clausecount+=3
 		couple+=1
 	wg+=1
 
@@ -126,18 +134,19 @@ for week,group in [(i,j) for i,j in list(itertools.product(np.arange(W),np.arang
 
 
 
+print("{} variables, {} clauses".format(M_-1, clausecount))
+if g.solve():
 
-print("{} variables".format(M_-1))
-print(g.solve())
-
-out = np.array(g.get_model()[_B3-1:B3_-1]).reshape(W,G,P)
-for i, week in zip(range(len(out)),out):
-	wstr="week {}\t".format(i)
-	for j, group in zip(range(len(week)),week):
-		wstr+="| ".format(j)
-		gstr=""
-		for k,player in zip(range(len(group)),group):
-			if player>0:
-				gstr+="{} ".format(k)
-		wstr+=gstr+"\t"
-	print(wstr)
+	out = np.array(g.get_model()[_B3-1:B3_-1]).reshape(W,G,P)
+	for i, week in zip(range(len(out)),out):
+		wstr="week {}\t".format(i)
+		for j, group in zip(range(len(week)),week):
+			wstr+="| ".format(j)
+			gstr=""
+			for k,player in zip(range(len(group)),group):
+				if player>0:
+					gstr+="{} ".format(k)
+			wstr+=gstr+"\t"
+		print(wstr)
+else:
+	print("=====UNSATISFIABLE=====")
