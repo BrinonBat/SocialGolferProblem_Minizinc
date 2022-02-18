@@ -4,12 +4,12 @@
         <int id="taille_groupe" saisie="False" /> <!--  saisie indique si  la valeur est déjà dans le modèle "True" ou si l'utilisateur doit la saisir lui-même "False" -->
         <int id="nb_groupes" saisie="False" />
         <int id="nb_semaines" saisie="False" />
-        <int id="nb_golfeurs" saisie="True"> taille_groupe*nb_groupes </int>
+        <int id="nb_golfeurs" saisie="True">taille_groupe*nb_groupes</int>
 
         <!-- sets d'entiers -->
-        <set id="golfeurs" > 1..nb_golfeurs</set>
-        <set id="semaines" > 1..nb_semaines</set>
-        <set id="groupes" > 1..nb_groupes</set>
+        <set id="golfeurs" >1..nb_golfeurs</set>
+        <set id="semaines" >1..nb_semaines</set>
+        <set id="groupes" >1..nb_groupes</set>
 
         <array id="planning" size="[nb_semaines][nb_groupes]" />
     </variables>
@@ -17,73 +17,76 @@
     <constraints>
         <!-- tous les joueurs jouent chaque semaine -->
         <forall>
-            <elemof name="semaine"> semaines </elemof>
+            <elemof name="semaine">semaines</elemof>
             <equals>
-                <!-- TODO array_union([planning[semaine,groupe]| groupe in groupes]  TODO -->
-                <elem name="golfeurs" />
+                <array_union nb_parameters="2"> <!-- peut aussi avoir un seul paramètre étant une liste de arrays-->
+                    <elemof name="groupe">groupes</elemof>
+                    <elem>planning[semaine,groupe]</elem>
+                </array_union>
+                <elem>golfeurs</elem>
             </equals>
         </forall>
 
         <!--les groupes sont de taille nb_golfeurs/nb_groupes-->
         <forall>
-            <elemof name="semaine"> semaines </elemof>
-            <elemof name="groupe"> groupes </elemof>
+            <elemof name="semaine">semaines</elemof>
+            <elemof name="groupe">groupes</elemof>
             <equals>
                 <card>
-                    <elem> planning[semaine,groupe] </elem>
+                    <elem>planning[semaine,groupe]</elem>
                 </card>
-                <elem> taille_groupe </elem>
+                <elem>taille_groupe</elem>
             </equals>
         </forall>
 
         <!-- chaque golfeur ne joue qu'une seule fois avec chaque autre-->
         <forall>
-            <elemof name="s1"> semaines </elemof>
-            <elemof name="s2"> semaines </elemof>
-            <elemof name="g1"> groupes </elemof>
-            <elemof name="g2"> groupes </elemof>
+            <elemof name="s1">semaines</elemof>
+            <elemof name="s2">semaines</elemof>
+            <elemof name="g1">groupes</elemof>
+            <elemof name="g2">groupes</elemof>
             <where>
                 <notEquals>
-                    <elem> s1 g1 </elem>
-                    <elem> s2 g2 </elem>
+                    <elem>s1 g1</elem>
+                    <elem>s2 g2</elem>
                 </notEquals>
             </where>
             <lesserThan>
                 <card>
                     <intersect>
-                        <elem> planning[s1,g1] </elem>
-                        <elem> planning[s2,g2] </elem>
+                        <elem>planning[s1,g1]</elem>
+                        <elem>planning[s2,g2]</elem>
                     </intersect>
                 </card>
-                <elem> 2 </elem>
+                <elem>2</elem>
             </lesserThan>
         </forall>
 
         <!--assertion-->
         <condition> 
             <lesserThan>
-                <elem> taille_groupe </elem>
-                <elem> nb_groupes + 1 </elem>
+                <elem>taille_groupe</elem>
+                <elem>nb_groupes + 1</elem>
             </lesserThan>
         </condition>   
 
         <!--brisage de symmetrie sur la première ligne-->   
         <forall>
-            <elemof name="groupe"> groupes </elemof>
+            <elemof name="groupe">groupes</elemof>
             <equals>
-                <elem> planning[1,groupe] </elem> 
-                <elem> ((groupe-1)*taille_groupes+1)..(groupe*taille_groupes) </elem> <!-- a rediscuter si trop dur à gérer, je peux voir pour le casser un peu-->
+                <elem>planning[1,groupe]</elem> 
+                <elem>((groupe-1)*taille_groupes+1)..(groupe*taille_groupes)</elem> <!-- a rediscuter si trop dur à gérer, je peux voir pour le casser un peu-->
             </equals>
         </forall>  
 
         <!--brisage de symmetrie sur la répartition d'une semaine de la première semaine parmi les semaines suivantes-->
         <forall>
-            <elemof name="golfeur"> 1..taille_groupe </elemof>
+            <elemof name="golfeur">1..taille_groupe</elemof>
             <forall>
-                <elemof name="semaine"> 2..nb_semaines </elemof>
+                <elemof name="semaine">2..nb_semaines</elemof>
                 <existsIn>
-                    <elem> golfeur </elem>
-                    <elem> planning[semaine,golfeur] </elem>
+                    <elem>golfeur</elem>
+                    <elem>planning[semaine,golfeur]</elem>
                 </existsIn>
             </forall>
         </forall>

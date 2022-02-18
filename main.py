@@ -232,7 +232,7 @@ class Model():
 
 class MainApp(App):
     def build(self):
-        model = self.importXML('SGP_model2.xml')
+        model = self.importXML('SGP_model2 _optimized.xml')
         root = WindowManager(transition=NoTransition())
         root.build()
         return root
@@ -259,11 +259,50 @@ class MainApp(App):
 
         liste_constraints = []
         for constraint in constraints:
-            txt = ET.tostring(constraint, encoding='unicode')
-            liste_constraints.append("".join(txt.split()))
+            result = self.get_constraint(constraint)
+
+            liste_constraints.append(result)
+            print(result)
 
         setattr(model, 'constraints', liste_constraints)
 
         return model
+
+    def get_constraint(self, constraint):
+        constraint_array = [constraint.tag]
+        elemof = []
+        actions = []
+
+        childs = constraint.getchildren()
+        for child in childs:
+            if(child.tag == 'elemof'):
+                string = child.get('name') + ' elemof ' + child.text
+                elemof.append(string)
+            else:
+                result = self.get_childs(child)
+                actions.append(result)
+
+        constraint_array.append(elemof)
+        constraint_array.append(actions)
+
+        return constraint_array
+
+    def get_childs(self, element):
+        tag = element.tag
+        if(tag == 'elem'):
+            return element.text
+        elif(tag == 'elemof'):
+            return element.get('name') + ' elemof ' + element.text
+        elif(tag == 'forall' or tag == 'condition'):
+            return self.get_constraint(element)
+        else:
+            action = [element.tag]
+
+            childs = element.getchildren()
+            for child in childs:
+                result = self.get_childs(child)
+                action.append(result)
+
+            return action
 
 MainApp().run()
