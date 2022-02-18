@@ -251,9 +251,12 @@ class MainApp(App):
         for variable in variables:
             tag = variable.tag
             if(tag == 'int'):
-                setattr(model, variable.get("id"), None)
+                if(variable.get("saisie") == "True"):
+                    setattr(model, variable.get("id"), variable.text)
+                else:
+                    setattr(model, variable.get("id"), None)
             elif(tag == 'set'):
-                setattr(model, variable.get("id"), {})
+                setattr(model, variable.get("id"), variable.text)
             else:
                 setattr(model, variable.get("id"), [])
 
@@ -293,7 +296,7 @@ class MainApp(App):
             return element.text
         elif(tag == 'elemof'):
             return element.get('name') + ' elemof ' + element.text
-        elif(tag == 'forall' or tag == 'condition'):
+        elif(tag == 'forall' or tag == 'condition' or tag == 'array_union'):
             return self.get_constraint(element)
         else:
             action = [element.tag]
