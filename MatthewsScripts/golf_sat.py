@@ -132,10 +132,12 @@ print(g.solve())
 
 out = np.array(g.get_model()[_B3-1:B3_-1]).reshape(W,G,P)
 for i, week in zip(range(len(out)),out):
-	print("week {}".format(i))
+	wstr="week {}\t".format(i)
 	for j, group in zip(range(len(week)),week):
-		print("week {}\tgroup {}".format(i,j))
+		wstr+="| ".format(j)
+		gstr=""
 		for k,player in zip(range(len(group)),group):
 			if player>0:
-				print("player {}".format(k))
-	print("")
+				gstr+="{} ".format(k)
+		wstr+=gstr+"\t"
+	print(wstr)
