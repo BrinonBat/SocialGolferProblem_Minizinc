@@ -75,7 +75,7 @@
             <elemof name="groupe">groupes</elemof>
             <equals>
                 <elem>planning[1,groupe]</elem> 
-                <elem>((groupe-1)*taille_groupes+1)..(groupe*taille_groupes)</elem> <!-- a rediscuter si trop dur à gérer, je peux voir pour le casser un peu-->
+                <elem>((groupe-1)*taille_groupe+1)..(groupe*taille_groupe)</elem> <!-- a rediscuter si trop dur à gérer, je peux voir pour le casser un peu-->
             </equals>
         </forall>  
 
