@@ -7,11 +7,12 @@ class Model():
         print('init model')
 
 class MainApp(App):
-    def build(self):
+    def build(self, affichage):
         model = self.importXML('SGP_model2 _optimized.xml')
-        root = ui.WindowManager(transition=ui.NoTransition())
-        root.build()
-        return root
+        if affichage:
+            root = ui.WindowManager(transition=ui.NoTransition())
+            root.build()
+            return root
 
     def importXML(self, file):
         tree = ET.parse(file)

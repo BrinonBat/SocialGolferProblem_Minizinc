@@ -1,3 +1,3 @@
 import parse
-
-parse.MainApp().run()
+affichage=False
+parse.MainApp().build(affichage)
