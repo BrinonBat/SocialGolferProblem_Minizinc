@@ -10,9 +10,9 @@ class Model():
         tree = ET.parse(file)
         root = tree.getroot()
 
-        model = Model()
+        self
 
-        setattr(model, 'resolution', root.get('resolution'))
+        setattr(self, 'resolution', root.get('resolution'))
 
         variables = root.find('variables')
         constraints = root.find('constraints')
@@ -21,13 +21,13 @@ class Model():
             tag = variable.tag
             if(tag == 'int'):
                 if(variable.get("saisie") == "True"):
-                    setattr(model, variable.get("id"), variable.text)
+                    setattr(self, variable.get("id"), variable.text)
                 else:
-                    setattr(model, variable.get("id"), None)
+                    setattr(self, variable.get("id"), None)
             elif(tag == 'set'):
-                setattr(model, variable.get("id"), variable.text)
+                setattr(self, variable.get("id"), variable.text)
             else:
-                setattr(model, variable.get("id"), [])
+                setattr(self, variable.get("id"), [])
 
         liste_constraints = []
         for constraint in constraints:
@@ -36,9 +36,9 @@ class Model():
             liste_constraints.append(result)
             print(result)
 
-        setattr(model, 'constraints', liste_constraints)
+        setattr(self, 'constraints', liste_constraints)
 
-        return model
+        return self
 
     def get_constraint(self, constraint):
         constraint_array = [constraint.tag]
