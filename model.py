@@ -3,25 +3,14 @@ import xml.etree.ElementTree as ET
 from kivy.app import App
 
 class Model():
-    def __init__(self):
-        print('init model')
-
-class MainApp(App):
-    def build(self, affichage):
-        model = self.importXML('SGP_model2 _optimized.xml')
-        if affichage:
-            root = ui.WindowManager(transition=ui.NoTransition())
-            root.build()
-            return root
-        else : return model
+    def __init__(self, file):
+        self.importXML(file)
 
     def importXML(self, file):
         tree = ET.parse(file)
         root = tree.getroot()
 
-        model = Model()
-
-        setattr(model, 'resolution', root.get('resolution'))
+        setattr(self, 'resolution', root.get('resolution'))
 
         variables = root.find('variables')
         constraints = root.find('constraints')
@@ -30,13 +19,13 @@ class MainApp(App):
             tag = variable.tag
             if(tag == 'int'):
                 if(variable.get("saisie") == "True"):
-                    setattr(model, variable.get("id"), variable.text)
+                    setattr(self, variable.get("id"), variable.text)
                 else:
-                    setattr(model, variable.get("id"), None)
+                    setattr(self, variable.get("id"), None)
             elif(tag == 'set'):
-                setattr(model, variable.get("id"), variable.text)
+                setattr(self, variable.get("id"), variable.text)
             else:
-                setattr(model, variable.get("id"), [])
+                setattr(self, variable.get("id"), [])
 
         liste_constraints = []
         for constraint in constraints:
@@ -45,9 +34,7 @@ class MainApp(App):
             liste_constraints.append(result)
             print(result)
 
-        setattr(model, 'constraints', liste_constraints)
-
-        return model
+        setattr(self, 'constraints', liste_constraints)
 
     def get_constraint(self, constraint):
         constraint_array = [constraint.tag]
@@ -84,4 +71,4 @@ class MainApp(App):
                 result = self.get_childs(child)
                 action.append(result)
 
-            return action
+            return action    
