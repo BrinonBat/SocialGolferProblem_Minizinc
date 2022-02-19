@@ -36,6 +36,10 @@ class WindowManager(ScreenManager):
         width, height= pyautogui.size()
         Window.size = (width, height)
 
+        # Chargement de l'écran principal
+        self.mainScreen = MainScreen.build(self)
+        self.add_widget(self.mainScreen)
+
         # Chargement de l'écran de chargement
         self.loadingScreen = LoadingScreen.build(self)
         self.add_widget(self.loadingScreen)
@@ -57,8 +61,8 @@ class WindowManager(ScreenManager):
     def start_parsing(self, spinner, model_name):
         m = model.Model(model_name)
 
-        self.mainScreen = MainScreen.build(self, m)
-        self.add_widget(self.mainScreen)
+        self.ids.main_screen.add_widget(self.update_main_screen(m))
+        
         self.display_main_screen()
 
     def search_solutions(self, m, button):
@@ -80,10 +84,6 @@ class WindowManager(ScreenManager):
 
         for attribute in attributes:
             setattr(m, attribute, values[attributes.index(attribute)]) 
-
-
-        for attribute in m.__dict__:
-            print(str(attribute) + " : " + str(getattr(m, attribute)))
 
         # Afficher l'écran de chargement
         # self.display_loading_screen()
@@ -141,74 +141,7 @@ class WindowManager(ScreenManager):
     def quit(self, button):
         App.get_running_app().stop()
 
-class ModelsScreen(Screen):
-    def build(self):
-        width, height= pyautogui.size()
-
-        screen = Screen(name="models_screen")
-
-        window_layout = AnchorLayout(anchor_x='left', anchor_y='top')
-        self.main_background = Widget()
-        with self.canvas:
-            Rectangle(size=(width, height), source='images/background.jpg')
-            Color(0, 0, 0, 0.4)
-            Rectangle(size=(width, height))
-        window_layout.add_widget(self.main_background)
-
-        main_layout = FloatLayout()
-
-        # TITRE
-        label_titre = Label(font_size="160px", font_name="fonts/Neonderthaw-Regular.ttf", text="Social Golfer", pos_hint={"center_x": 0.5, "top": 1}, size_hint=(1, 0.3))
-        main_layout.add_widget(label_titre)
-
-        # PARTIE CHOIX MODEL
-        content_layout = FloatLayout(size_hint=(1, 0.7))
-
-        label_models = Label(font_size="40px", text="Choisissez un modèle parmis la liste ci-dessous :", size_hint=(1, 0.2), pos_hint={"center_x": 0.5, "top": 0.9})
-        content_layout.add_widget(label_models)
-
-        models = []
-        for file in os.listdir():
-            if file.endswith(".xml"):
-                models.append(file)
-
-        spinner = Spinner(
-            text='Choisir un modèle',
-            font_size="25px",
-            values=models,
-            size_hint=(0.2, 0.15),
-            pos_hint={'center_x': 0.5, 'center_y': 0.6}
-        )
-        spinner.bind(text=self.start_parsing)
-        content_layout.add_widget(spinner)
-
-        button_quit = Button(font_size="30px", text="Quitter", size_hint=(0.15, 0.1), pos_hint={"right": 0.95, "y": 0.05}, background_normal='', background_color={1, .3, .4, .85})
-        button_quit.bind(on_release=self.quit)
-        content_layout.add_widget(button_quit)
-
-        main_layout.add_widget(content_layout)
-        window_layout.add_widget(main_layout)
-        screen.add_widget(window_layout)
-
-        return screen
-
-class LoadingScreen(Screen):
-    def build(self):
-        screen = Screen(name="loading_screen")
-
-        main_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-
-        gif = Image(source="images/loading_animation.zip", anim_delay="0.5")
-        main_layout.add_widget(gif)
-
-        screen.add_widget(main_layout)
-
-        return screen
-
-class MainScreen(Screen):
-    def build(self, m):
-        screen = Screen(name="main_screen")
-
+    def update_main_screen(self, m):
         main_layout = FloatLayout()
 
         # BOUTON RETOUR
@@ -279,6 +212,76 @@ class MainScreen(Screen):
 
         main_layout.add_widget(content_layout)
 
+        return main_layout
+
+class ModelsScreen(Screen):
+    def build(self):
+        width, height= pyautogui.size()
+
+        screen = Screen(name="models_screen")
+
+        window_layout = AnchorLayout(anchor_x='left', anchor_y='top')
+        self.main_background = Widget()
+        with self.canvas:
+            Rectangle(size=(width, height), source='images/background.jpg')
+            Color(0, 0, 0, 0.4)
+            Rectangle(size=(width, height))
+        window_layout.add_widget(self.main_background)
+
+        main_layout = FloatLayout()
+
+        # TITRE
+        label_titre = Label(font_size="160px", font_name="fonts/Neonderthaw-Regular.ttf", text="Social Golfer", pos_hint={"center_x": 0.5, "top": 1}, size_hint=(1, 0.3))
+        main_layout.add_widget(label_titre)
+
+        # PARTIE CHOIX MODEL
+        content_layout = FloatLayout(size_hint=(1, 0.7))
+
+        label_models = Label(font_size="40px", text="Choisissez un modèle parmis la liste ci-dessous :", size_hint=(1, 0.2), pos_hint={"center_x": 0.5, "top": 0.9})
+        content_layout.add_widget(label_models)
+
+        models = []
+        for file in os.listdir():
+            if file.endswith(".xml"):
+                models.append(file)
+
+        spinner = Spinner(
+            text='Choisir un modèle',
+            font_size="25px",
+            values=models,
+            size_hint=(0.2, 0.15),
+            pos_hint={'center_x': 0.5, 'center_y': 0.6}
+        )
+        spinner.bind(text=self.start_parsing)
+        content_layout.add_widget(spinner)
+
+        button_quit = Button(font_size="30px", text="Quitter", size_hint=(0.15, 0.1), pos_hint={"right": 0.95, "y": 0.05}, background_normal='', background_color={1, .3, .4, .85})
+        button_quit.bind(on_release=self.quit)
+        content_layout.add_widget(button_quit)
+
+        main_layout.add_widget(content_layout)
+        window_layout.add_widget(main_layout)
+        screen.add_widget(window_layout)
+
+        return screen
+
+class LoadingScreen(Screen):
+    def build(self):
+        screen = Screen(name="loading_screen")
+
+        main_layout = AnchorLayout(anchor_x='center', anchor_y='center')
+
+        gif = Image(source="images/loading_animation.zip", anim_delay="0.5")
+        main_layout.add_widget(gif)
+
         screen.add_widget(main_layout)
+
+        return screen
+
+class MainScreen(Screen):
+    def build(self):
+        screen = Screen(name="main_screen")
+
+        self.ids['main_screen'] = screen
 
         return screen        
