@@ -6,14 +6,6 @@ class Model():
     def __init__(self):
         print('init model')
 
-class MainApp(App):
-    def build(self, affichage):
-        model = self.importXML('SGP_model2 _optimized.xml')
-        if affichage:
-            root = ui.WindowManager(transition=ui.NoTransition())
-            root.build()
-            return root
-
     def importXML(self, file):
         tree = ET.parse(file)
         root = tree.getroot()
@@ -84,3 +76,15 @@ class MainApp(App):
                 action.append(result)
 
             return action
+
+class MainApp(App):
+    def build(self, affichage):
+        model = Model()
+        model = model.importXML('SGP_model2 _optimized.xml')
+        if affichage:
+            root = ui.WindowManager(transition=ui.NoTransition())
+            root.build()
+            return root
+        else : return model
+
+    
