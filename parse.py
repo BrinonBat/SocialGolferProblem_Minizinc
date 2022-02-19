@@ -6,13 +6,22 @@ class Model():
     def __init__(self):
         print('init model')
 
+class MainApp(App):
+    def build(self, affichage):
+        model = self.importXML('SGP_model2 _optimized.xml')
+        if affichage:
+            root = ui.WindowManager(transition=ui.NoTransition())
+            root.build()
+            return root
+        else : return model
+
     def importXML(self, file):
         tree = ET.parse(file)
         root = tree.getroot()
 
-        self
+        model = Model()
 
-        setattr(self, 'resolution', root.get('resolution'))
+        setattr(model, 'resolution', root.get('resolution'))
 
         variables = root.find('variables')
         constraints = root.find('constraints')
@@ -21,13 +30,13 @@ class Model():
             tag = variable.tag
             if(tag == 'int'):
                 if(variable.get("saisie") == "True"):
-                    setattr(self, variable.get("id"), variable.text)
+                    setattr(model, variable.get("id"), variable.text)
                 else:
-                    setattr(self, variable.get("id"), None)
+                    setattr(model, variable.get("id"), None)
             elif(tag == 'set'):
-                setattr(self, variable.get("id"), variable.text)
+                setattr(model, variable.get("id"), variable.text)
             else:
-                setattr(self, variable.get("id"), [])
+                setattr(model, variable.get("id"), [])
 
         liste_constraints = []
         for constraint in constraints:
@@ -36,9 +45,9 @@ class Model():
             liste_constraints.append(result)
             print(result)
 
-        setattr(self, 'constraints', liste_constraints)
+        setattr(model, 'constraints', liste_constraints)
 
-        return self
+        return model
 
     def get_constraint(self, constraint):
         constraint_array = [constraint.tag]
@@ -76,15 +85,3 @@ class Model():
                 action.append(result)
 
             return action
-
-class MainApp(App):
-    def build(self, affichage):
-        model = Model()
-        model = model.importXML('SGP_model2 _optimized.xml')
-        if affichage:
-            root = ui.WindowManager(transition=ui.NoTransition())
-            root.build()
-            return root
-        else : return model
-
-    
