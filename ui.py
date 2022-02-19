@@ -5,7 +5,7 @@ import time
 import asyncio
 import threading
 import model
-
+import instanciation
 from datetime import timedelta
 
 from functools import partial
@@ -84,6 +84,8 @@ class WindowManager(ScreenManager):
 
         for attribute in attributes:
             setattr(m, attribute, values[attributes.index(attribute)]) 
+
+        instanciation.instanciate(m)
 
         # Afficher l'écran de chargement
         # self.display_loading_screen()
