@@ -24,6 +24,9 @@ class Model():
                     setattr(self, variable.get("id"), None)
             elif(tag == 'set'):
                 setattr(self, variable.get("id"), variable.text)
+            elif(tag=='array'):
+                setattr(self, variable.get("id"), [variable.get("size"),variable.text])
+          
             else:
                 setattr(self, variable.get("id"), [])
 
