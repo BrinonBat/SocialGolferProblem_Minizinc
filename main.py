@@ -1,3 +1,4 @@
-import parse
+import parse, instanciation, solver
 affichage=False
-parse.MainApp().build(affichage)
+model=parse.MainApp().build(affichage)
+instanciation.instanciate(model)
