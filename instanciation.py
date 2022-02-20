@@ -1,4 +1,6 @@
+from copy import deepcopy
 from sre_compile import isstring
+import re
 
 
 
@@ -19,15 +21,13 @@ def hasANonNumeric(model):
         if(isVariable(model,attribute)):
 
             if not str(getattr(model,attribute)).isnumeric(): 
-                print(" this one is not numeric : "+str(attribute)+" : "+str(getattr(model,attribute)))
                 return True
     return False
 
-#tested
 def replaceString(model,phrase):
     for attribute in model.__dict__:
-        if(str((getattr(model,attribute))).isnumeric()):
-                phrase=phrase.replace(attribute,str(getattr(model,attribute)))
+        if isstring(getattr(model,attribute)):
+            phrase=phrase.replace(attribute,str(getattr(model,attribute)))
     
     return phrase
 
@@ -52,18 +52,219 @@ def calculateVariables(model):
         remaining-=1
         print("remaining : "+str(remaining))
 
+def replaceStringOnSet(model,contrainte):
+    for i in range(0,len(contrainte)):
+        if isstring(contrainte[i]):
+            contrainte[i]=replaceString(model,contrainte[i])
+        else:
+            contrainte[i]=replaceStringOnSet(model,contrainte[i])
+    return contrainte
     
+def extractNumbers(strings):
+    string=' '.join(strings)
+    li_numbers=[int(s) for s in re.findall(r'-?\d+', string)]
+    if(string.__contains__('..')): # cas où le format est X..Y
+        li_numbers=list(range(li_numbers[0],li_numbers[1]+1))
+    return li_numbers
+
+def replaceByValues(contrainte,dico):
+    for i in range(0,len(contrainte)):
+        if isstring(contrainte[i]):
+            for var in dico:
+                contrainte[i]=contrainte[i].replace(var,str(dico[var]))
+        else:
+            contrainte[i]=replaceByValues(contrainte[i],dico)
+    return contrainte
+
+def dicoUpdate(dico,mat_values):
+    for i in range(len(dico)-1,-1,-1):
     
+        if(dico[mat_values[i][0]]==mat_values[i][1][-1]):
+            dico[mat_values[i][0]]=mat_values[i][1][0] #réinitialisation à la première valeur
+            #print("dernier element, incrémentation de la valeur précédante")
+        else: 
+            indice=mat_values[i][1].index(dico[mat_values[i][0]])
+            dico[mat_values[i][0]]=mat_values[i][1][indice+1]
+            return dico
+
+def testIteration(contrainte):
+    if(contrainte[0]=="equals"):
+        return contrainte[1]==contrainte[2]
+    elif(contrainte[0]=="notEquals"):
+        return contrainte[1]!=contrainte[2]
+
+def atomiseContrainte(contrainte,li_contraintes):
+    if contrainte[0]=="forall":
+        #prise en compte des paramètres sur lesquels boucler
+        mat_values=[]
+        for parameters in contrainte[1]:
+            parameters=parameters.split()
+            mat_values.append([parameters[0],extractNumbers(parameters[2:])])
+        #print(mat_values)
+                    
+        #initialisation du dictionnaire de suivi des valeurs
+        dico_parameters={}
+        for elem in mat_values:
+            dico_parameters[elem[0]]=elem[1][0]
+
+        #remplacement en boucle dans la suite
+        total_iter=1 #compte le nombre d'iterations
+        for elem in mat_values:
+            total_iter=total_iter*len(elem[1])
+
+
+        while(total_iter>0):
+            total_iter=total_iter-1
+            #print("total_iter is "+str(total_iter))
+            #modifie une copie de la contrainte
+            copy_contrainte=deepcopy(contrainte)
+            copy_contrainte=replaceByValues(copy_contrainte,dico_parameters)
+            #print("contrainte copiée: "+str(copy_contrainte))
+            #print("dico_parameters AVANT : "+str(dico_parameters))
+            if(total_iter>0) : dico_parameters=dicoUpdate(dico_parameters,mat_values)
+            #print("dico_parameters APRES : "+str(dico_parameters))
+            #relance de l'algo sur la contrainte modifiée
+            #cas où un where est dans la boucle
+            if(contrainte[2][0]=="where"):
+                if not testIteration(copy_contrainte[2][1]): pass
+                else : li_contraintes.append(atomiseContrainte(copy_contrainte[3],li_contraintes))
+            else: li_contraintes.append(atomiseContrainte(copy_contrainte[2],li_contraintes))
+
+    elif contrainte[0]=="equals":
+        if not isstring(contrainte[1]):
+            if contrainte[1][0]=="card":
+                contrainte[0]="cardeq"
+                contrainte[1]=atomiseContrainte(contrainte[1][1],li_contraintes)
+            else: contrainte[1]=atomiseContrainte(contrainte[1],li_contraintes)
+        else:
+            if contrainte[1].__contains__('..'):
+                tmp=contrainte[1].split('..')
+                contrainte[1]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+        
+        if not isstring(contrainte[2]):
+            if contrainte[2][0]=="card":
+                contrainte[0]="cardeq"
+                contrainte[2]=atomiseContrainte(contrainte[2][1],li_contraintes)
+            else: contrainte[2]=atomiseContrainte(contrainte[2],li_contraintes)
+        else:
+            if contrainte[2].__contains__('..'):
+                tmp=contrainte[2].split('..')
+                contrainte[2]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+        
+        li_contraintes.append(contrainte)
+
+    elif contrainte[0]=="lesserThan":
+        if not isstring(contrainte[1]):
+            if contrainte[1][0]=="card":
+                contrainte[0]="cardlt"
+                contrainte[1]=atomiseContrainte(contrainte[1][1],li_contraintes)
+            else: contrainte[1]=atomiseContrainte(contrainte[1],li_contraintes)
+        else:
+            if contrainte[1].__contains__('..'):
+                tmp=contrainte[1].split('..')
+                contrainte[1]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+        
+        if not isstring(contrainte[2]):
+            if contrainte[2][0]=="card":
+                contrainte[0]="cardlt"
+                contrainte[2]=atomiseContrainte(contrainte[2][1],li_contraintes)
+            else: contrainte[2]=atomiseContrainte(contrainte[2],li_contraintes)
+        else:
+            if contrainte[2].__contains__('..'):
+                tmp=contrainte[2].split('..')
+                contrainte[2]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+        
+        li_contraintes.append(contrainte)
+
+    elif contrainte[0]=="greaterThan":
+        if not isstring(contrainte[1]):
+            if contrainte[1][0]=="card":
+                contrainte[0]="cardgt"
+                contrainte[1]=atomiseContrainte(contrainte[1][1],li_contraintes)
+            else: contrainte[1]=atomiseContrainte(contrainte[1],li_contraintes)
+        else:
+            if contrainte[1].__contains__('..'):
+                tmp=contrainte[1].split('..')
+                contrainte[1]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+        
+        if not isstring(contrainte[2]):
+            if contrainte[2][0]=="card":
+                contrainte[0]="cardgt"
+                contrainte[2]=atomiseContrainte(contrainte[2][1],li_contraintes)
+            else: contrainte[2]=atomiseContrainte(contrainte[2],li_contraintes)
+        else:
+            if contrainte[2].__contains__('..'):
+                tmp=contrainte[2].split('..')
+                contrainte[2]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+        
+        li_contraintes.append(contrainte)
+  
+    elif contrainte[0]=="array_union":
+        #prise en compte des paramètres sur lesquels boucler
+        mat_values=[]
+        for parameters in contrainte[1]:
+            parameters=parameters.split()
+            mat_values.append([parameters[0],extractNumbers(parameters[2:])])
+        #print(mat_values)
+                    
+        #initialisation du dictionnaire de suivi des valeurs
+        dico_parameters={}
+        for elem in mat_values:
+            dico_parameters[elem[0]]=elem[1][0]
+
+        #remplacement en boucle dans la suite
+        total_iter=1 #compte le nombre d'iterations
+        for elem in mat_values:
+            total_iter=total_iter*len(elem[1])
+        
+        
+        copy_contrainte=deepcopy(contrainte)
+        copy_contrainte=replaceByValues(copy_contrainte,dico_parameters)
+        part1=deepcopy(copy_contrainte[2])
+        dico_parameters=dicoUpdate(dico_parameters,mat_values)
+        copy_contrainte=deepcopy(contrainte)
+        copy_contrainte=replaceByValues(copy_contrainte,dico_parameters)
+        part2=deepcopy(copy_contrainte[2])
+        nom_var='uc'+''.join(map(str,extractNumbers(part1)))+''.join(map(str,extractNumbers(part2)))
+        union_contraintes=[['union',part1,part2,nom_var]]
+        i=0
+        while(total_iter-i>2):
+            if(i+1<total_iter) : dico_parameters=dicoUpdate(dico_parameters,mat_values)
+            copy_contrainte=deepcopy(contrainte)
+            copy_contrainte=replaceByValues(copy_contrainte,dico_parameters)
+            part2=deepcopy(copy_contrainte[2])
+            part1=union_contraintes[i][3]
+            nom_var='uc'+''.join(map(str,extractNumbers(part1)))+''.join(map(str,extractNumbers(part2)))
+            union_contraintes.append(['union',part1,part2,nom_var])
+            i+=1
+        li_contraintes+=union_contraintes
+        #return uniquement sur la toute dernière valeur
+        return union_contraintes[-1][3]
+
+    elif contrainte[0]=="intersect":
     
+        part1=deepcopy(contrainte[1])
+        part2=deepcopy(contrainte[2])
+        nom_var='_'.join(map(str,extractNumbers(part1)))+'n'+'_'.join(map(str,extractNumbers(part2)))
+        nom_var_inverse='_'.join(map(str,extractNumbers(part2)))+'n'+'_'.join(map(str,extractNumbers(part1)))
+        if not (['intersect',part2,part1,nom_var_inverse] in li_contraintes):
+            res=[['intersect',part1,part2,nom_var]]
+            li_contraintes+=res
+            return nom_var
+        return None
+
+    elif contrainte[0]=="existsIn":
+        part1=deepcopy(contrainte[1])
+        part2=deepcopy(contrainte[2])
+        #nom_var='_'.join(map(str,extractNumbers(part1)))+'in'+'_'.join(map(str,extractNumbers(part2)))
+        res=[['existsIn',part1,part2]]
+        li_contraintes+=res
+
+    else: return contrainte
 
 
 #le modèle ici est déjà complet. Les variables ont été saisies au préalable par l'utilisateur à laide des méthodes suviantes:
 def instanciate(model):
-    #affichage du modèle
-    for attribute in model.__dict__:
-        if attribute !='resolution' and attribute!='constraints':
-            print(str(attribute)+" : "+str(getattr(model,attribute))+" "+str(type(getattr(model,attribute))))
-            if getattr(model,attribute)==None : setattr(model,attribute,'2')
 
     #maj valeurs variables
     calculateVariables(model)
@@ -74,16 +275,33 @@ def instanciate(model):
             if isSet(model,attribute): #uniquement pour les sets
                 new_one=replaceString(model,getattr(model,attribute))
                 new_one=new_one.split('..')
-                print(new_one)
-                new_one=list(range(int(new_one[0]),int(new_one[1])+1))
-                print(new_one)
+                new_one=str(list(range(int(new_one[0]),int(new_one[1])+1)))
                 setattr(model,attribute,new_one)
 
+    #maj des arrays ?
+
+
+    #affichage du modèle
+    #for attribute in model.__dict__:
+    #    if attribute !='resolution' and attribute!='constraints':
+    #        print(str(attribute)+" : "+str(getattr(model,attribute))+" "+str(type(getattr(model,attribute))))
+    #print(" INITIALEMENT LES CONTRAINTES SONT "+str(model.constraints))
+    #print(" APRES TRAITEMENT :")
     #generation des contraintes
     new_contraintes=[]
     for contrainte in model.constraints:
         #remplacement des sets
-
+        contrainte=replaceStringOnSet(model,contrainte)
+        
         #eclate la contrainte en contraintes atomiques
+        li_contraintes=[]
+        atomiseContrainte(contrainte,li_contraintes)
 
         #ajoute la liste de contraintes à la liste
+        for cont in li_contraintes:
+            if cont!=None: 
+               if not None in cont : new_contraintes.append(cont)
+
+    print("FINAL CONTRAINTES are ")
+    for contr in new_contraintes:
+        print(contr)
