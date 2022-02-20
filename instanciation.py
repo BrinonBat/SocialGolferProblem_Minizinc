@@ -61,10 +61,15 @@ def replaceStringOnSet(model,contrainte):
     return contrainte
     
 def extractNumbers(strings):
-    string=' '.join(strings)
-    li_numbers=[int(s) for s in re.findall(r'-?\d+', string)]
-    if(string.__contains__('..')): # cas où le format est X..Y
-        li_numbers=list(range(li_numbers[0],li_numbers[1]+1))
+    strings=''.join(strings)
+    print("string is "+strings)
+    if(strings.__contains__('..')): strings.replace('..','_to_')
+    if(strings.__contains__('_to_')):
+        numbers=strings.split('_to_')
+        li_numbers=list(range(int(numbers[0]),int(numbers[1])+1))
+
+    else:li_numbers=[int(s) for s in re.findall(r'-?\d+', strings)]
+
     return li_numbers
 
 def replaceByValues(contrainte,dico):
@@ -99,6 +104,7 @@ def atomiseContrainte(contrainte,li_contraintes):
         mat_values=[]
         for parameters in contrainte[1]:
             parameters=parameters.split()
+            print("PARAMETERS ARE "+str(parameters))
             mat_values.append([parameters[0],extractNumbers(parameters[2:])])
         #print(mat_values)
                     
@@ -139,7 +145,7 @@ def atomiseContrainte(contrainte,li_contraintes):
         else:
             if contrainte[1].__contains__('..'):
                 tmp=contrainte[1].split('..')
-                contrainte[1]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+                contrainte[1]=str((eval(tmp[0])))+'_to_'+str(eval(tmp[1]))
         
         if not isstring(contrainte[2]):
             if contrainte[2][0]=="card":
@@ -149,7 +155,7 @@ def atomiseContrainte(contrainte,li_contraintes):
         else:
             if contrainte[2].__contains__('..'):
                 tmp=contrainte[2].split('..')
-                contrainte[2]=list(range(eval(tmp[0]),eval(tmp[1])+1))
+                contrainte[2]=str((eval(tmp[0])))+'_to_'+str(eval(tmp[1]))
         
         li_contraintes.append(contrainte)
 
@@ -256,7 +262,6 @@ def atomiseContrainte(contrainte,li_contraintes):
     elif contrainte[0]=="existsIn":
         part1=deepcopy(contrainte[1])
         part2=deepcopy(contrainte[2])
-        #nom_var='_'.join(map(str,extractNumbers(part1)))+'in'+'_'.join(map(str,extractNumbers(part2)))
         res=[['existsIn',part1,part2]]
         li_contraintes+=res
 
@@ -266,6 +271,8 @@ def atomiseContrainte(contrainte,li_contraintes):
 #le modèle ici est déjà complet. Les variables ont été saisies au préalable par l'utilisateur à laide des méthodes suviantes:
 def instanciate(model):
 
+    new_variables=[]
+    default_domain={}
     #maj valeurs variables
     calculateVariables(model)
 
@@ -275,18 +282,17 @@ def instanciate(model):
             if isSet(model,attribute): #uniquement pour les sets
                 new_one=replaceString(model,getattr(model,attribute))
                 new_one=new_one.split('..')
-                new_one=str(list(range(int(new_one[0]),int(new_one[1])+1)))
+                new_one=str(new_one[0])+'_to_'+str(new_one[1])
                 setattr(model,attribute,new_one)
 
-    #maj des arrays ?
-
-
+        if attribute=='golfeurs':
+            numbers=getattr(model,attribute).split('_to_')
+            default_domain=set(list(range(int(numbers[0]),int(numbers[1])+1)))
     #affichage du modèle
     #for attribute in model.__dict__:
     #    if attribute !='resolution' and attribute!='constraints':
     #        print(str(attribute)+" : "+str(getattr(model,attribute))+" "+str(type(getattr(model,attribute))))
-    #print(" INITIALEMENT LES CONTRAINTES SONT "+str(model.constraints))
-    #print(" APRES TRAITEMENT :")
+
     #generation des contraintes
     new_contraintes=[]
     for contrainte in model.constraints:
@@ -301,7 +307,41 @@ def instanciate(model):
         for cont in li_contraintes:
             if cont!=None: 
                if not None in cont : new_contraintes.append(cont)
+            #new_contraintes.append(cont)
 
     print("FINAL CONTRAINTES are ")
+    
     for contr in new_contraintes:
-        print(contr)
+        if(contr==None):continue
+        #declaration des variables
+        for i in range(1,len(contr)):
+            contr[i]=str(contr[i]).replace("[","_")
+            contr[i]=str(contr[i]).replace(",","_")
+            contr[i]=str(contr[i]).replace("]","")
+            
+            #enregistrement des sets
+            if(contr[i].__contains__('_to_')):
+                numbers=contr[i].split('_to_')
+                li=set(list(range(int(numbers[0]),int(numbers[1])+1)))
+                name=[contr[i],li,True]
+                if not name in new_variables: new_variables.append(name)
+
+            #enregistrement des numériques
+            elif(contr[i].isnumeric()):
+                name=[contr[i],set(contr[i]),True]
+                if not name in new_variables: new_variables.append(name)
+
+            else:
+                name=[contr[i],default_domain,False]
+                if not name in new_variables: new_variables.append(name)
+
+            #if(contr[i][0]=='_'):
+            #    numbers=extractNumbers(contr[i])
+            #    contr[i]=str(numbers[0])+'_to_'+str(numbers[-1])
+        
+    for contr in new_contraintes:
+        print(str(contr))
+    for variable in new_variables :
+        print(variable)
+
+    result=[new_variables,new_contraintes]
