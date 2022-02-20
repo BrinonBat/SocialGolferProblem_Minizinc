@@ -54,7 +54,7 @@ class Model():
                 actions.append(result)
 
         constraint_array.append(elemof)
-        constraint_array.append(actions)
+        constraint_array+=actions
 
         return constraint_array
 
