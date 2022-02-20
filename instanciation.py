@@ -62,7 +62,6 @@ def replaceStringOnSet(model,contrainte):
     
 def extractNumbers(strings):
     strings=''.join(strings)
-    print("string is "+strings)
     if(strings.__contains__('..')): strings.replace('..','_to_')
     if(strings.__contains__('_to_')):
         numbers=strings.split('_to_')
@@ -104,7 +103,6 @@ def atomiseContrainte(contrainte,li_contraintes):
         mat_values=[]
         for parameters in contrainte[1]:
             parameters=parameters.split()
-            print("PARAMETERS ARE "+str(parameters))
             mat_values.append([parameters[0],extractNumbers(parameters[2:])])
         #print(mat_values)
                     
@@ -308,8 +306,6 @@ def instanciate(model):
             if cont!=None: 
                if not None in cont : new_contraintes.append(cont)
             #new_contraintes.append(cont)
-
-    print("FINAL CONTRAINTES are ")
     
     for contr in new_contraintes:
         if(contr==None):continue
