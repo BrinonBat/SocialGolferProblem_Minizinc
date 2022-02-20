@@ -341,3 +341,4 @@ def instanciate(model):
         print(variable)
 
     result=[new_variables,new_contraintes]
+    return result
