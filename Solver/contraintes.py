@@ -225,9 +225,11 @@ class Union(ContrainteTernaire):
             var1.borneInf |= (var2.borneInf | var3.borneInf)
             var1.borneSup &= (var2.borneSup | var3.borneSup)
 
-        if not var2.const:
-            var1.borneInf |= (var2.borneInf | var3.borneInf)
-            var1.borneSup &= (var2.borneSup | var3.borneSup)
+        # if not var2.const:
+        #     var2.borneInf |= (var1.borneInf - var3.borneInf)
+        #     # var2.borneSup &= (var2.borneSup | var3.borneSup)
+        # if not var3.const:
+        #     var3.borneInf |= (var1.borneInf - var2.borneInf)
 
         if not var1.valide():
             return -1
