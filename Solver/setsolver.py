@@ -103,7 +103,7 @@ def get_num_var(variable, nom):
             return i
     raise Exception(f'Variable "{nom}" not found')
 
-def Launch_Solver(sets,constraints, une_solution): # FlatBat 
+def Launch_Solver(sets,constraints, une_solution=False): # FlatBat 
 	setobjs = []
 	cstrobjs = []
 
@@ -150,24 +150,24 @@ if __name__ == "__main__":
 	import time
 
 	Ens=[
-		["I",set({1,2,3,4}),False],
-		["J",set({1,2,3,4}),False],
-		["D",set({1.3}),True],
-		["B",set({3,4}),True],
+		# ["I",set({1,2,3,4}),True],
+		["J",set(list(range(10))),False],
+		# ["D",set({1,3}),True],
+		# ["B",set({2,4}),True],
 		["E",set({3,4,5,6}),True],
 
-		["O",set({1,2,3,4}),False],
+		# ["O",set({1,2,3,4}),False],
 		# ["OO",set({1,2,3,4}),False],
-		["2",int(2),True],
-		["3",int(3),True]
+		# ["2",int(2),True],
+		# ["3",int(3),True]
 	]
 
 	Cstr=[
 
-		["union","I","D","B"],
-		["union","J","D","B"],
-		["cardlt","O","3"],
-		["existsIn","2","O"],
+		# ["union","I","D","B"],
+		["equals","J","E"],
+		# ["cardlt","O","3"],
+		# ["existsIn","2","O"],
 	]
 
 
