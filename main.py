@@ -6,6 +6,4 @@ class MainApp(App):
         root = ui.WindowManager(transition=ui.NoTransition())
         root.build()
         return root
-
 MainApp().run()
-# instanciation.instanciate(model)
