@@ -141,6 +141,8 @@ def Launch_Solver(sets,constraints, une_solution): # FlatBat
 	for i, sol in enumerate(solutions):
 		print(sol)
 
+	return solutions
+
 
 
 
