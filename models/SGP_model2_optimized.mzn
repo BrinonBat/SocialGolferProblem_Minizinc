@@ -32,14 +32,14 @@ constraint assert(taille_groupes <= nb_groupes,"invalide car la taille du groupe
 %surcontraintes
 %Un joueur ne joue qu'une seule fois par semaine
 %C4
-constraint forall(semaine in semaines, g1,g2 in groupes where g1!=g2)(
-  card(planning[semaine,g1] intersect planning[semaine,g2])=0
-);
+%constraint forall(semaine in semaines, g1,g2 in groupes where g1!=g2)(
+%  card(planning[semaine,g1] intersect planning[semaine,g2])=0
+%);
 
 %C5
-constraint forall(semaine in semaines, g1,g2 in groupes where g1!=g2)(
-  planning[semaine,g1] intersect planning[semaine,g2] = {}
-);
+%constraint forall(semaine in semaines, g1,g2 in groupes where g1!=g2)(
+%  planning[semaine,g1] intersect planning[semaine,g2] = {}
+%);
 
 
 %brisage de symmetrie
