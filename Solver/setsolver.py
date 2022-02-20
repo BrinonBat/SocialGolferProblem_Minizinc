@@ -1,7 +1,7 @@
 from pprint import pprint
 
-from contraintes import CardinalityEQ,CardinalityLT, Equal, Intersection, Union, Inclusion
-from ensemble import Ensemble
+from Solver.contraintes import CardinalityEQ,CardinalityLT, Equal, Intersection, Union, Inclusion
+from Solver.ensemble import Ensemble
 
 class FinRechercheException(Exception):
     pass
