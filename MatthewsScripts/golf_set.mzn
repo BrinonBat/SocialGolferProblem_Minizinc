@@ -1,7 +1,7 @@
-int: players;
 int: groups;
 int: weeks;
-int: groupSize = players div groups;
+int: groupSize;
+int: players = groups * groupSize;
 
 set of int: P = 1..players;
 set of int: G = 1..groups;

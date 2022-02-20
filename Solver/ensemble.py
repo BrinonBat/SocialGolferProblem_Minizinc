@@ -12,8 +12,8 @@ class Ensemble:
         self.value = None
         if const:
             if type(domaine) == int:
-                self.borneInf = set()
-                self.borneSup = set()
+                self.borneInf = set({domaine})
+                self.borneSup = set({domaine})
                 self.value = domaine
             else:
                 self.borneInf = domaine
