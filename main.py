@@ -1,4 +1,4 @@
-import instanciation, solver, ui
+import ui
 from kivy.app import App
 
 class MainApp(App):
