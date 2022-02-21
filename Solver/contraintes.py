@@ -150,10 +150,10 @@ class Inclusion(ContrainteBinaire):
         var1tmp = var1.duplicate()
         var2tmp = var2.duplicate()
 
-        if not var1.const:
-            var1.borneSup &= var2.borneSup
-        if not var2.const:
-            var2.borneInf |= var1.borneInf
+        # if not var1.const:
+        var1.borneSup &= var2.borneSup
+        # if not var2.const:
+        var2.borneInf |= var1.borneInf
 
         if not (var1.valide() and var2.valide()):
             return -1
@@ -221,9 +221,10 @@ class Union(ContrainteTernaire):
         var2 = ensembles[self.var2]
         var3 = ensembles[self.var3]
         var1tmp = var1.duplicate()
-        if not var1.const:
-            var1.borneInf |= (var2.borneInf | var3.borneInf)
-            var1.borneSup &= (var2.borneSup | var3.borneSup)
+        
+        # if not var1.const:
+        var1.borneInf |= (var2.borneInf | var3.borneInf)
+        var1.borneSup &= (var2.borneSup | var3.borneSup)
 
         # if not var2.const:
         #     var2.borneInf |= (var1.borneInf - var3.borneInf)
@@ -258,17 +259,17 @@ class Intersection(ContrainteTernaire):
         var2tmp = var2.duplicate()
         var3tmp = var3.duplicate()
 
-        if not var1.const:
-            var1.borneInf |= (var2.borneInf & var3.borneInf)
-            var1.borneSup &= (var2.borneSup & var3.borneSup)
+        # if not var1.const:
+        var1.borneInf |= (var2.borneInf & var3.borneInf)
         
-        if not var2.const:
-            var2.borneInf |= var1.borneInf
-            var2.borneSup -= (var3.borneSup - var1.borneSup)
+        # if not var2.const:
+        var2.borneInf |= var1.borneInf
+        # var2.borneSup -= (var3.borneSup - var1.borneSup)
 
-        if not var3.const:
-            var3.borneInf |= var1.borneInf
-            var3.borneSup -= (var2.borneSup - var1.borneSup)
+        # if not var3.const:
+        var1.borneSup &= (var2.borneSup & var3.borneSup)
+        var3.borneInf |= var1.borneInf
+        # var3.borneSup -= (var2.borneSup - var1.borneSup)
         
 
         if not (var1.valide() and var2.valide() and var3.valide()):
