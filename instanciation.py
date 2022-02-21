@@ -1,7 +1,8 @@
 from copy import deepcopy
 from sre_compile import isstring
 import re
-
+from ui import WindowManager
+from Solver.setsolver import Launch_Solver
 
 
 def isSet(model,attribute):
@@ -267,7 +268,7 @@ def atomiseContrainte(contrainte,li_contraintes):
 
 
 #le modèle ici est déjà complet. Les variables ont été saisies au préalable par l'utilisateur à laide des méthodes suviantes:
-def instanciate(model):
+def instanciate(self, model):
 
     new_variables=[]
     default_domain={}
@@ -340,5 +341,25 @@ def instanciate(model):
     for variable in new_variables :
         print(variable)
 
+<<<<<<< HEAD
     result=[new_variables,new_contraintes]
     return result
+=======
+    Ens=[
+        ["J",set(list(range(10))),False],
+        ["E",set({3,4,5,6}),True],
+        ["O",set({1,2,3,4}),False],
+        ["2",int(2),True],
+        ["3",int(3),True]
+    ]
+    Cstr=[
+        ["equals","J","E"],
+        ["cardlt","O","3"],
+        ["existsIn","2","O"],
+    ]
+
+    solutions = Launch_Solver(Ens, Cstr, False)
+    # solutions = Launch_Solver(new_variables, new_contraintes, True)
+
+    WindowManager.display_solution(self, solutions)
+>>>>>>> origin/SolverBackEnd

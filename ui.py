@@ -4,8 +4,8 @@ import pyautogui
 import time
 import asyncio
 import threading
-import model
 import instanciation
+
 from datetime import timedelta
 
 from functools import partial
@@ -29,7 +29,7 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 
-from minizinc import Instance, Model, Solver
+from model import Model
 
 class WindowManager(ScreenManager):
     def build(self):
@@ -59,13 +59,16 @@ class WindowManager(ScreenManager):
         self.current = "models_screen"
 
     def start_parsing(self, spinner, model_name):
-        m = model.Model(model_name)
+        self.model_name = model_name
+        self.parse_model()
 
-        self.ids.main_screen.add_widget(self.update_main_screen(m))
-        
+        self.ids.main_screen.add_widget(self.update_main_screen())
         self.display_main_screen()
+    
+    def parse_model(self):
+        self.model = Model(self.model_name)
 
-    def search_solutions(self, m, button):
+    def search_solutions(self, button):
         self.ids.erreur_label.text = ""
 
         values = []
@@ -77,53 +80,40 @@ class WindowManager(ScreenManager):
                     values.append(self.ids[text_input].text)
         
         attributes = []
-        for attribute in m.__dict__:
-            if(attribute != 'resolution' and attribute != 'constraints' and getattr(m, attribute) == None):
-                # print(str(attribute) + " : " + str(getattr(m,attribute)))
+        for attribute in self.model.__dict__:
+            if(attribute != 'resolution' and attribute != 'constraints' and getattr(self.model, attribute) == None):
                 attributes.append(str(attribute))
 
         for attribute in attributes:
-            setattr(m, attribute, values[attributes.index(attribute)]) 
-
-        instanciation.instanciate(m)
+            setattr(self.model, attribute, values[attributes.index(attribute)]) 
 
         # Afficher l'écran de chargement
-        # self.display_loading_screen()
+        self.display_loading_screen()
 
         # Lancer la résolution
-        # x = threading.Thread(target=self.call_minizinc, args=[nb_golfeurs, nb_semaines, nb_groupes, taille_groupe])
-        # x.start()
-
-    # def call_minizinc(self, nb_golfeurs, nb_semaines, nb_groupes, taille_groupe):
-    #     results = []
-
-    #     try:
-    #         # Load model from file
-    #         m = Model("models/SGP_model2_optimized.mzn")
-
-    #         # Find the MiniZinc solver configuration for Gecode
-    #         gecode = Solver.lookup("gecode")
-
-    #         # Create an Instance of the model for Gecode
-    #         instance = Instance(gecode, m)
-
-    #         # Assign values
-    #         instance["nb_golfeurs"] = nb_golfeurs
-    #         instance["nb_semaines"] = nb_semaines
-    #         instance["nb_groupes"] = nb_groupes
-    #         instance["taille_groupes"] = taille_groupe
-
-    #         # Solve and print solution
-    #         self.results = instance.solve(nr_solutions=1, timeout=timedelta(seconds=20))
-    #         result = self.results.solution[0]
-            
-    #         self.ids.solution_label.text = str(result)
-    #         self.ids.reinitialiser_button.disabled = False
+        x = threading.Thread(target=instanciation.instanciate, args=[self, self.model])
+        x.start()
     
-    #         self.display_main_screen()
+    def display_solution(self, solutions):
+        self.str_solutions = []
+        self.index_solutions = 0
 
-    #     except ValueError:
-    #         pass
+        if(len(solutions) >= 1):
+            if(len(solutions) > 1): self.ids.autre_solution_button.disabled = False
+
+            for solution in solutions:
+                self.str_solutions.append("\n".join(map(lambda x: str(x), solution)))
+
+            self.next_solution()
+            
+        else:
+            self.ids.solution_label.text = "Aucune solution trouvée."
+
+        self.ids.reinitialiser_button.disabled = False
+
+        self.display_main_screen()
+
+        self.parse_model()
 
     def reinitialiser(self, button):
         for text_input in self.ids:
@@ -133,6 +123,18 @@ class WindowManager(ScreenManager):
         self.ids.solution_label.text = ""
         self.ids.erreur_label.text = ""
         self.ids.reinitialiser_button.disabled = True
+        self.ids.autre_solution_button.disabled = True
+
+    def autre_solution(self, button):
+        self.next_solution()
+
+    def next_solution(self):
+        if(self.index_solutions >= len(self.str_solutions)): self.index_solutions = 0
+
+        string = 'Solution ' + str((self.index_solutions + 1)) + '/' + str(len(self.str_solutions)) + ' :\n\n' + self.str_solutions[self.index_solutions]
+        self.index_solutions += 1
+
+        self.ids.solution_label.text = string
 
     def display_erreur(self, erreur):
         self.ids.erreur_label.text = erreur
@@ -143,13 +145,18 @@ class WindowManager(ScreenManager):
     def quit(self, button):
         App.get_running_app().stop()
 
-    def update_main_screen(self, m):
+    def update_main_screen(self):
         main_layout = FloatLayout()
 
         # BOUTON RETOUR
-        button_back = Button(font_size="25px", text="Retour", size_hint=(0.1, 0.06), pos_hint={"x": 0.025, "top": 0.95}, background_normal='', background_color={1, .3, .4, .9})
+        button_back = Button(font_size="25px", text="Retour", size_hint=(0.1, 0.06), pos_hint={"x": 0.025, "top": 0.95}, background_normal='', background_color={1, 0.3, 0.4, 0.9})
         button_back.bind(on_release=self.back)
         main_layout.add_widget(button_back)
+
+        # BOUTON QUIT
+        button_quit = Button(font_size="25px", text="Quitter", size_hint=(0.1, 0.06), pos_hint={"x": 0.875, "top": 0.95}, background_normal='', background_color={1, 0.3, 0.4, 0.9})
+        button_quit.bind(on_release=self.quit)
+        main_layout.add_widget(button_quit)
 
         # TITRE
         label_titre = Label(font_size="160px", font_name="fonts/Neonderthaw-Regular.ttf", text="Social Golfer", pos_hint={"center_x": 0.5, "top": 1}, size_hint=(1, 0.3))
@@ -164,8 +171,8 @@ class WindowManager(ScreenManager):
         settings_layout.add_widget(label_parametres)
 
         attributes = []
-        for attribute in m.__dict__:
-            if(attribute != 'resolution' and attribute != 'constraints' and getattr(m, attribute) == None):
+        for attribute in self.model.__dict__:
+            if(attribute != 'resolution' and attribute != 'constraints' and getattr(self.model, attribute) == None):
                 attributes.append(str(attribute))
 
         for attribute in attributes:
@@ -183,8 +190,8 @@ class WindowManager(ScreenManager):
         settings_layout.add_widget(erreur_label)
         self.ids['erreur_label'] = erreur_label
 
-        button_valider = Button(font_size="30px", text="Valider", size_hint=(0.25, 0.1), pos_hint={"center_x": 0.5, "y": 0.2}, background_normal='', background_color={1, .3, .4, .85})
-        buttoncallback = partial(self.search_solutions, m)
+        button_valider = Button(font_size="30px", text="Valider", size_hint=(0.25, 0.1), pos_hint={"center_x": 0.5, "y": 0.2}, background_normal='', background_color={1, 0.3, 0.4, 0.85})
+        buttoncallback = partial(self.search_solutions)
         button_valider.bind(on_release=buttoncallback)
         settings_layout.add_widget(button_valider)
 
@@ -196,19 +203,25 @@ class WindowManager(ScreenManager):
         label_resultats = Label(font_size="40px", text="Résultats :", size_hint=(1, 0.2), pos_hint={"center_x": 0.5, "top": 1})
         results_layout.add_widget(label_resultats)
 
-        label_solution = Label(font_size="30px", text="", size_hint=(1, 0.6), pos_hint={"center_x": 0.5, "top": 1})
+        label_solution = Label(font_size="30px", text="", size_hint=(1, 0.6), pos_hint={"center_x": 0.5, "top": 0.95})
         results_layout.add_widget(label_solution)
         self.ids['solution_label'] = label_solution
 
-        button_reinitialiser = Button(font_size="30px", text="Réinitialiser", size_hint=(0.25, 0.1), pos_hint={"center_x": 0.5, "y": 0.2}, background_normal='', background_color={1, .3, .4, .85})
+        buttons_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), pos_hint={"center_x": 0.5, "y": 0.2})
+        buttons_layout.add_widget(Widget())
+        button_reinitialiser = Button(font_size="25px", text="Réinitialiser", background_normal='', background_color={1, 0.3, 0.4, 0.85})
         button_reinitialiser.bind(on_release=self.reinitialiser)
         button_reinitialiser.disabled = True
-        results_layout.add_widget(button_reinitialiser)
+        buttons_layout.add_widget(button_reinitialiser)
         self.ids['reinitialiser_button'] = button_reinitialiser
-
-        button_quit = Button(font_size="30px", text="Quitter", size_hint=(0.25, 0.1), pos_hint={"right": 0.95, "y": 0.05}, background_normal='', background_color={1, .3, .4, .85})
-        button_quit.bind(on_release=self.quit)
-        results_layout.add_widget(button_quit)
+        buttons_layout.add_widget(Widget())
+        button_autre_solution = Button(font_size="25px", text="Autre solution", background_normal='', background_color={1, 0.3, 0.4, 0.85})
+        button_autre_solution.bind(on_release=self.autre_solution)
+        button_autre_solution.disabled = True
+        buttons_layout.add_widget(button_autre_solution)
+        self.ids['autre_solution_button'] = button_autre_solution
+        buttons_layout.add_widget(Widget())
+        results_layout.add_widget(buttons_layout)
 
         content_layout.add_widget(results_layout)
 
@@ -231,6 +244,11 @@ class ModelsScreen(Screen):
         window_layout.add_widget(self.main_background)
 
         main_layout = FloatLayout()
+
+        # BOUTON QUIT
+        button_quit = Button(font_size="25px", text="Quitter", size_hint=(0.1, 0.06), pos_hint={"x": 0.875, "top": 0.95}, background_normal='', background_color={1, 0.3, 0.4, 0.9})
+        button_quit.bind(on_release=self.quit)
+        main_layout.add_widget(button_quit)
 
         # TITRE
         label_titre = Label(font_size="160px", font_name="fonts/Neonderthaw-Regular.ttf", text="Social Golfer", pos_hint={"center_x": 0.5, "top": 1}, size_hint=(1, 0.3))
@@ -257,10 +275,6 @@ class ModelsScreen(Screen):
         spinner.bind(text=self.start_parsing)
         content_layout.add_widget(spinner)
 
-        button_quit = Button(font_size="30px", text="Quitter", size_hint=(0.15, 0.1), pos_hint={"right": 0.95, "y": 0.05}, background_normal='', background_color={1, .3, .4, .85})
-        button_quit.bind(on_release=self.quit)
-        content_layout.add_widget(button_quit)
-
         main_layout.add_widget(content_layout)
         window_layout.add_widget(main_layout)
         screen.add_widget(window_layout)
@@ -286,4 +300,4 @@ class MainScreen(Screen):
 
         self.ids['main_screen'] = screen
 
-        return screen        
+        return screen
