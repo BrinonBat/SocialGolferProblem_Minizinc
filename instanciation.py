@@ -124,9 +124,8 @@ def atomiseContrainte(contrainte,li_contraintes):
             #modifie une copie de la contrainte
             copy_contrainte=deepcopy(contrainte)
             copy_contrainte=replaceByValues(copy_contrainte,dico_parameters)
-            #print("contrainte copiée: "+str(copy_contrainte))
             #print("dico_parameters AVANT : "+str(dico_parameters))
-            if(total_iter>0) : dico_parameters=dicoUpdate(dico_parameters,mat_values)
+            if(total_iter>1) : dico_parameters=dicoUpdate(dico_parameters,mat_values)
             #print("dico_parameters APRES : "+str(dico_parameters))
             #relance de l'algo sur la contrainte modifiée
             #cas où un where est dans la boucle
@@ -341,10 +340,9 @@ def instanciate(self, model):
     for variable in new_variables :
         print(variable)
 
-<<<<<<< HEAD
     result=[new_variables,new_contraintes]
     return result
-=======
+
     Ens=[
         ["J",set(list(range(10))),False],
         ["E",set({3,4,5,6}),True],
@@ -358,8 +356,8 @@ def instanciate(self, model):
         ["existsIn","2","O"],
     ]
 
-    solutions = Launch_Solver(Ens, Cstr, False)
-    # solutions = Launch_Solver(new_variables, new_contraintes, True)
+    #solutions = Launch_Solver(Ens, Cstr, False)
+    solutions = Launch_Solver(new_variables, new_contraintes, True)
 
     WindowManager.display_solution(self, solutions)
->>>>>>> origin/SolverBackEnd
+
