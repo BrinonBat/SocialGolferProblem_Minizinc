@@ -4,8 +4,8 @@ import pyautogui
 import time
 import asyncio
 import threading
-import model
 import instanciation
+
 from datetime import timedelta
 
 from functools import partial
@@ -29,7 +29,7 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 
-from minizinc import Instance, Model, Solver
+from model import Model
 
 class WindowManager(ScreenManager):
     def build(self):
@@ -59,13 +59,16 @@ class WindowManager(ScreenManager):
         self.current = "models_screen"
 
     def start_parsing(self, spinner, model_name):
-        m = model.Model(model_name)
+        self.model_name = model_name
+        self.parse_model()
 
-        self.ids.main_screen.add_widget(self.update_main_screen(m))
-        
+        self.ids.main_screen.add_widget(self.update_main_screen())
         self.display_main_screen()
+    
+    def parse_model(self):
+        self.model = Model(self.model_name)
 
-    def search_solutions(self, m, button):
+    def search_solutions(self, button):
         self.ids.erreur_label.text = ""
 
         values = []
@@ -77,21 +80,18 @@ class WindowManager(ScreenManager):
                     values.append(self.ids[text_input].text)
         
         attributes = []
-        for attribute in m.__dict__:
-            if(attribute != 'resolution' and attribute != 'constraints' and getattr(m, attribute) == None):
-                # print(str(attribute) + " : " + str(getattr(m,attribute)))
+        for attribute in self.model.__dict__:
+            if(attribute != 'resolution' and attribute != 'constraints' and getattr(self.model, attribute) == None):
                 attributes.append(str(attribute))
 
         for attribute in attributes:
-            setattr(m, attribute, values[attributes.index(attribute)]) 
-
-        # instanciation.instanciate(m)
+            setattr(self.model, attribute, values[attributes.index(attribute)]) 
 
         # Afficher l'écran de chargement
         self.display_loading_screen()
 
         # Lancer la résolution
-        x = threading.Thread(target=instanciation.instanciate, args=[self, m])
+        x = threading.Thread(target=instanciation.instanciate, args=[self, self.model])
         x.start()
     
     def display_solution(self, solutions):
@@ -113,36 +113,7 @@ class WindowManager(ScreenManager):
 
         self.display_main_screen()
 
-    # def call_minizinc(self, nb_golfeurs, nb_semaines, nb_groupes, taille_groupe):
-    #     results = []
-
-    #     try:
-    #         # Load model from file
-    #         m = Model("models/SGP_model2_optimized.mzn")
-
-    #         # Find the MiniZinc solver configuration for Gecode
-    #         gecode = Solver.lookup("gecode")
-
-    #         # Create an Instance of the model for Gecode
-    #         instance = Instance(gecode, m)
-
-    #         # Assign values
-    #         instance["nb_golfeurs"] = nb_golfeurs
-    #         instance["nb_semaines"] = nb_semaines
-    #         instance["nb_groupes"] = nb_groupes
-    #         instance["taille_groupes"] = taille_groupe
-
-    #         # Solve and print solution
-    #         self.results = instance.solve(nr_solutions=1, timeout=timedelta(seconds=20))
-    #         result = self.results.solution[0]
-            
-    #         self.ids.solution_label.text = str(result)
-    #         self.ids.reinitialiser_button.disabled = False
-    
-    #         self.display_main_screen()
-
-    #     except ValueError:
-    #         pass
+        self.parse_model()
 
     def reinitialiser(self, button):
         for text_input in self.ids:
@@ -174,7 +145,7 @@ class WindowManager(ScreenManager):
     def quit(self, button):
         App.get_running_app().stop()
 
-    def update_main_screen(self, m):
+    def update_main_screen(self):
         main_layout = FloatLayout()
 
         # BOUTON RETOUR
@@ -200,8 +171,8 @@ class WindowManager(ScreenManager):
         settings_layout.add_widget(label_parametres)
 
         attributes = []
-        for attribute in m.__dict__:
-            if(attribute != 'resolution' and attribute != 'constraints' and getattr(m, attribute) == None):
+        for attribute in self.model.__dict__:
+            if(attribute != 'resolution' and attribute != 'constraints' and getattr(self.model, attribute) == None):
                 attributes.append(str(attribute))
 
         for attribute in attributes:
@@ -220,7 +191,7 @@ class WindowManager(ScreenManager):
         self.ids['erreur_label'] = erreur_label
 
         button_valider = Button(font_size="30px", text="Valider", size_hint=(0.25, 0.1), pos_hint={"center_x": 0.5, "y": 0.2}, background_normal='', background_color={1, 0.3, 0.4, 0.85})
-        buttoncallback = partial(self.search_solutions, m)
+        buttoncallback = partial(self.search_solutions)
         button_valider.bind(on_release=buttoncallback)
         settings_layout.add_widget(button_valider)
 
@@ -329,4 +300,4 @@ class MainScreen(Screen):
 
         self.ids['main_screen'] = screen
 
-        return screen        
+        return screen
