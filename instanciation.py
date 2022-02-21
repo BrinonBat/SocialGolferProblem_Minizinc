@@ -1,7 +1,7 @@
 from copy import deepcopy
 from sre_compile import isstring
 import re
-from ui import WindowManager
+# from ui import WindowManager
 from Solver.setsolver import Launch_Solver
 
 
