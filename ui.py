@@ -5,7 +5,8 @@ import time
 import asyncio
 import threading
 import instanciation
-
+import concurrent.futures
+from Solver.setsolver import Launch_Solver
 from datetime import timedelta
 
 from functools import partial
@@ -91,8 +92,12 @@ class WindowManager(ScreenManager):
         self.display_loading_screen()
 
         # Lancer la résolution
-        x = threading.Thread(target=instanciation.instanciate, args=[self, self.model])
-        x.start()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(instanciation.instanciate,self.model)
+            return_value = future.result()
+            solutions = Launch_Solver(return_value[0],return_value[1], True)
+
+        
     
     def display_solution(self, solutions):
         self.str_solutions = []
