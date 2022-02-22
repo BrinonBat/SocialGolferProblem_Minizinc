@@ -262,7 +262,7 @@ class ModelsScreen(Screen):
 
         models = []
         for file in os.listdir():
-            if file.endswith(".xml"):
+            if file.endswith(".bax"):
                 models.append(file)
 
         spinner = Spinner(
