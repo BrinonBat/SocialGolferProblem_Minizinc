@@ -96,8 +96,10 @@ class WindowManager(ScreenManager):
             future = executor.submit(instanciation.instanciate,self.model)
             return_value = future.result()
             solutions = Launch_Solver(return_value[0],return_value[1], True)
-
-        
+        #values=instanciation.instanciate(self.model)
+        #print(values[0])
+        #solutions=Launch_Solver(values[0],values[1],True)
+        self.display_solution(solutions)
     
     def display_solution(self, solutions):
         self.str_solutions = []

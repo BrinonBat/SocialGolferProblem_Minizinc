@@ -51,7 +51,6 @@ def calculateVariables(model):
                     replaced=calculateString(replaced)
                     setattr(model,attribute,replaced)
         remaining-=1
-        print("remaining : "+str(remaining))
 
 def replaceStringOnSet(model,contrainte):
     for i in range(0,len(contrainte)):
@@ -63,7 +62,7 @@ def replaceStringOnSet(model,contrainte):
     
 def extractNumbers(strings):
     strings=''.join(strings)
-    if(strings.__contains__('..')): strings.replace('..','_to_')
+    if(strings.__contains__('..')): strings=strings.replace('..','_to_')
     if(strings.__contains__('_to_')):
         numbers=strings.split('_to_')
         li_numbers=list(range(int(numbers[0]),int(numbers[1])+1))
@@ -105,8 +104,7 @@ def atomiseContrainte(contrainte,li_contraintes):
         for parameters in contrainte[1]:
             parameters=parameters.split()
             mat_values.append([parameters[0],extractNumbers(parameters[2:])])
-        #print(mat_values)
-                    
+       
         #initialisation du dictionnaire de suivi des valeurs
         dico_parameters={}
         for elem in mat_values:
@@ -115,11 +113,11 @@ def atomiseContrainte(contrainte,li_contraintes):
         #remplacement en boucle dans la suite
         total_iter=1 #compte le nombre d'iterations
         for elem in mat_values:
-            total_iter=total_iter*((elem[1][1]+1)-(elem[1][0]))
-        
+            total_iter=total_iter*((elem[1][-1]+1)-(elem[1][0]))
+        #print(" total iter is "+str(total_iter))
+    
         while(total_iter>0):
             total_iter=total_iter-1
-            #print("total_iter is "+str(total_iter))
             #modifie une copie de la contrainte
             copy_contrainte=deepcopy(contrainte)
             copy_contrainte=replaceByValues(copy_contrainte,dico_parameters)
@@ -131,7 +129,10 @@ def atomiseContrainte(contrainte,li_contraintes):
             if(contrainte[2][0]=="where"):
                 if not testIteration(copy_contrainte[2][1]): pass
                 else : li_contraintes.append(atomiseContrainte(copy_contrainte[3],li_contraintes))
-            else: li_contraintes.append(atomiseContrainte(copy_contrainte[2],li_contraintes))
+            else:
+                li_contraintes.append(atomiseContrainte(copy_contrainte[2],li_contraintes))
+
+            
 
     elif contrainte[0]=="equals":
         if not isstring(contrainte[1]):
