@@ -268,7 +268,7 @@ def atomiseContrainte(contrainte,li_contraintes):
 
 
 #le modèle ici est déjà complet. Les variables ont été saisies au préalable par l'utilisateur à laide des méthodes suviantes:
-def instanciate(self, model):
+def instanciate(model):
 
     new_variables=[]
     default_domain={}
@@ -341,6 +341,8 @@ def instanciate(self, model):
     for variable in new_variables :
         print(variable)
 
+    # return [new_variables, new_contraintes]
+
     Ens=[
         ["J",set(list(range(10))),False],
         ["E",set({3,4,5,6}),True],
@@ -354,7 +356,4 @@ def instanciate(self, model):
         ["existsIn","2","O"],
     ]
 
-    solutions = Launch_Solver(Ens, Cstr, False)
-    # solutions = Launch_Solver(new_variables, new_contraintes, True)
-
-    WindowManager.display_solution(self, solutions)
+    return [Ens, Cstr]

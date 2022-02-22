@@ -5,6 +5,7 @@ import time
 import asyncio
 import threading
 import instanciation
+from Solver.setsolver import Launch_Solver
 
 from datetime import timedelta
 
@@ -90,9 +91,15 @@ class WindowManager(ScreenManager):
         # Afficher l'écran de chargement
         self.display_loading_screen()
 
-        # Lancer la résolution
-        x = threading.Thread(target=instanciation.instanciate, args=[self, self.model])
+        # Instanciation du modèle
+        x = threading.Thread(target=self.solve)
         x.start()
+
+    def solve(self):
+        result = instanciation.instanciate(self.model)
+        solutions = Launch_Solver(result[0], result[1], False)
+
+        self.display_solution(solutions)
     
     def display_solution(self, solutions):
         self.str_solutions = []
