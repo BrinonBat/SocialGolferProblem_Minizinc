@@ -51,6 +51,27 @@
             </lesserThan>
         </forall>
 
+        <forall>
+            <elemof name="w">semaines</elemof>
+            <elemof name="g1">groupes</elemof>
+            <elemof name="g2">groupes</elemof>
+            <where>
+                <notEquals>
+                    <elem>g1</elem>
+                    <elem>g2</elem>
+                </notEquals>
+            </where>
+            <equals>
+                <intersect>
+                    <elem>planning[w,g1]</elem>
+                    <elem>planning[w,g2]</elem>
+                </intersect>
+                <card>
+                    <elem>0</elem>
+                </card>
+            </equals>
+        </forall>
+
         <!--assertion-->
         <condition> 
             <lesserThan>
