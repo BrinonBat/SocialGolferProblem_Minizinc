@@ -115,9 +115,8 @@ def atomiseContrainte(contrainte,li_contraintes):
         #remplacement en boucle dans la suite
         total_iter=1 #compte le nombre d'iterations
         for elem in mat_values:
-            total_iter=total_iter*len(elem[1])
-
-
+            total_iter=total_iter*((elem[1][1]+1)-(elem[1][0]))
+        
         while(total_iter>0):
             total_iter=total_iter-1
             #print("total_iter is "+str(total_iter))
