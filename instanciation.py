@@ -125,7 +125,7 @@ def atomiseContrainte(contrainte,li_contraintes):
             copy_contrainte=deepcopy(contrainte)
             copy_contrainte=replaceByValues(copy_contrainte,dico_parameters)
             #print("dico_parameters AVANT : "+str(dico_parameters))
-            if(total_iter>1) : dico_parameters=dicoUpdate(dico_parameters,mat_values)
+            if(total_iter>0) : dico_parameters=dicoUpdate(dico_parameters,mat_values)
             #print("dico_parameters APRES : "+str(dico_parameters))
             #relance de l'algo sur la contrainte modifiée
             #cas où un where est dans la boucle
@@ -324,7 +324,7 @@ def instanciate(self, model):
 
             #enregistrement des numériques
             elif(contr[i].isnumeric()):
-                name=[contr[i],set(contr[i]),True]
+                name=[contr[i],int(contr[i]),True]
                 if not name in new_variables: new_variables.append(name)
 
             else:
@@ -335,15 +335,16 @@ def instanciate(self, model):
             #    numbers=extractNumbers(contr[i])
             #    contr[i]=str(numbers[0])+'_to_'+str(numbers[-1])
         
-    for contr in new_contraintes:
-        print(str(contr))
-    for variable in new_variables :
-        print(variable)
-
+    #for contr in new_contraintes:
+    #    print(str(contr))
+    #for variable in new_variables :
+    #    print(variable)
+    print("Ens="+str(new_variables))
+    print("Cstr="+str(new_contraintes))
     # result=[new_variables,new_contraintes]
     # return result
 
     #solutions = Launch_Solver(Ens, Cstr, False)
-    solutions = Launch_Solver(new_variables, new_contraintes, True)
+    #solutions = Launch_Solver(new_variables, new_contraintes, True)
 
-    WindowManager.display_solution(self, solutions)
+    #WindowManager.display_solution(self, solutions)
